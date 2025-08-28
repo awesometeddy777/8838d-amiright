@@ -294,6 +294,103 @@ void driveStraightNew(int target)
             break;
         }
 
+        // if (time2 % 50 == 0 && time2 % 100 != 0 && time2 % 150 != 0)
+        // {
+        //     controller.print(0, 0, "ERROR: %f           ", float(error));
+        // }
+        // else if (time2 % 100 == 0 && time2 % 150 != 0)
+        // {
+        //     controller.print(1, 0, "vkp: %f           ", float(hKp));
+        // }
+        // else if (time2 % 150 == 0)
+        // {
+        //     controller.print(2, 0, "Time: %f        ", float(time2));
+        // }
+
+        delay(10);
+        time2 += 10;
+    }
+    driveBrake();
+}
+void driveStraightInches(double targetInches)
+{
+    // === Conversion to motor degrees ===
+    double wheelDiameter = 3.25; // change if you use 4" or other wheels
+    double wheelCircumference = wheelDiameter * M_PI;
+    double targetDegrees = (targetInches / wheelCircumference) * 360.0;
+
+    imu.tare();
+    double voltage;
+    double encoderAvg;
+    int count = 0;
+    double init_heading = imu.get_heading();
+    double heading_error = 0;
+    int cycle = 0; // Controller Display Cycle
+    time2 = 0;
+
+    if (init_heading > 180)
+    {
+        init_heading = init_heading - 360;
+    }
+
+    int timeout = 30000;
+    resetEncoders();
+
+    while (true)
+    {
+        encoderAvg = (left_motor_front.get_position() + right_motor_front.get_position()) / 2;
+
+        if (fabs(targetDegrees - encoderAvg) < 25)
+        {
+            setConstants(2.5, 0, 0);
+        }
+        else
+        {
+            setConstants(STRAIGHT_KP, STRAIGHT_KI, STRAIGHT_KD);
+        }
+
+        voltage = calcPID(targetDegrees, encoderAvg, STRAIGHT_INTEGRAL_KI, STRAIGHT_MAX_INTEGRAL);
+
+        double position = imu.get_heading();
+        if (position > 180)
+        {
+            position = position - 360;
+        }
+
+        // Fix wrap-around issues
+        if ((init_heading < 0) && (position > 0))
+        {
+            if ((position - init_heading) >= 180)
+            {
+                init_heading = init_heading + 360;
+                position = imu.get_heading();
+            }
+        }
+        else if ((init_heading > 0) && (position < 0))
+        {
+            if ((init_heading - position) >= 180)
+            {
+                position = imu.get_heading();
+            }
+        }
+
+        setConstants(HEADING_KP, HEADING_KI, HEADING_KD);
+        heading_error = calcPID2(init_heading, position, HEADING_INTEGRAL_KI, HEADING_MAX_INTEGRAL);
+
+        // Clamp voltage
+        if (voltage > 127)
+            voltage = 127;
+        else if (voltage < -127)
+            voltage = -127;
+
+        // Apply PID corrections
+        driveVolts((voltage + heading_error), (voltage - heading_error), 0);
+
+        if (fabs(targetDegrees - encoderAvg) <= 2)
+            count++;
+        if (count >= 8 || time2 > timeout)
+            break;
+
         if (time2 % 50 == 0 && time2 % 100 != 0 && time2 % 150 != 0)
         {
             controller.print(0, 0, "ERROR: %f           ", float(error));
@@ -393,7 +490,7 @@ void driveStraightNew(int target)
 // }
 */
 
-void driveStraight2(int target, int speed, int timeout = 5000)
+void driveStraight2(int target, int speed, int timeout)
 {
 
     bool over = false;
@@ -553,18 +650,18 @@ void driveTurn(int target)
             break;
         }
 
-        if (time2 % 50 == 0 && time2 % 100 != 0 && time2 % 150 != 0)
-        {
-            controller.print(0, 0, "ERROR: %f           ", float(error));
-        }
-        else if (time2 % 100 == 0 && time2 % 150 != 0)
-        {
-            controller.print(1, 0, "IMU: %f           ", float(imu.get_heading()));
-        }
-        else if (time2 % 150 == 0)
-        {
-            controller.print(2, 0, "Time: %f        ", float(time2));
-        }
+        // if (time2 % 50 == 0 && time2 % 100 != 0 && time2 % 150 != 0)
+        // {
+        //     controller.print(0, 0, "ERROR: %f           ", float(error));
+        // }
+        // else if (time2 % 100 == 0 && time2 % 150 != 0)
+        // {
+        //     controller.print(1, 0, "IMU: %f           ", float(imu.get_heading()));
+        // }
+        // else if (time2 % 150 == 0)
+        // {
+        //     controller.print(2, 0, "Time: %f        ", float(time2));
+        // }
 
         time2 += 10;
         delay(10);

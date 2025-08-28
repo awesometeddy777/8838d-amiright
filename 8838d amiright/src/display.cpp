@@ -25,22 +25,23 @@ void brain_screen()
 
 void controllerScreen()
 {
-    double chasstempC = ((right_motor_front.get_temperature() + right_motor_back.get_temperature() + left_motor_front.get_temperature() + left_motor_back.get_temperature()) / 4.0);
-    if (timeD % 50 == 0 && timeD % 100 != 0 && timeD % 150 != 0)
-    {
-        controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
-    }
-    else if (timeD % 100 == 0 && timeD % 150 != 0)
-    {
-        controller.print(1, 0, "ERR: %.2f           ", float(error));
-    }
-    else if (timeD % 150 == 0)
-    {
-        controller.print(2, 0, "C:%i I:%i MG:%i        ", int(chasstempC), int(intake1.get_temperature()), int(intake2.get_temperature()));
-    }
+    // double chasstempC = ((right_motor_front.get_temperature() + right_motor_back.get_temperature() + left_motor_front.get_temperature() + left_motor_back.get_temperature()) / 4.0);
+    // if (timeD % 50 == 0 && timeD % 100 != 0 && timeD % 150 != 0)
+    // {
+    //     controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
+    // }
+    // else if (timeD % 100 == 0 && timeD % 150 != 0)
+    // {
+    //     controller.print(1, 0, "ERR: %.2f           ", float(error));
+    // }
+    // else if (timeD % 150 == 0)
+    // {
+    //     controller.print(2, 0, "C:%i I:%i MG:%i        ", int(chasstempC), int(intake1.get_temperature()), int(intake2.get_temperature()));
+    // }
 
-    timeD += 1;
-    pros::delay(1);
+    // timeD += 1;
+    // pros::delay(1);
+    controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
 }
 
 void drawLogo()

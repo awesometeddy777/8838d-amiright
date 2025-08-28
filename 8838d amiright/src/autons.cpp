@@ -2,7 +2,10 @@
 
 void redLeft()
 {
-    driveAngleOld(12, 0, 800, 10, 6);
+    angleChangerToggle = !angleChangerToggle;
+    angleChanger.set_value(angleChangerToggle);
+    delay(500);
+    driveStraightNew(1000);
 }
 
 void redRight()
@@ -90,14 +93,14 @@ const char *getAutonName(autonSelect currentA)
     switch (currentA)
     {
     case redLeftAuton:
-        return "Current: Red Left";
+        return "Red Left";
     case redRightAuton:
-        return "Current: Red Right";
+        return "Red Right";
     case blueLeftAuton:
-        return "Current: Blue Left";
+        return "Blue Left";
     case blueRightAuton:
-        return "Current: Blue Right";
+        return "Blue Right";
     default:
-        return "Current: Unknown";
+        return "Unknown";
     }
 }

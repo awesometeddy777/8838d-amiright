@@ -39,12 +39,16 @@ void screenTask(void *)
 void initialize()
 {
 	lcd::initialize();
-	lcd::set_text(1, "Hello PROS User!");
 
 	lcd::register_btn1_cb(on_center_button);
 
 	startIntakeTask();
 	startColorSortTask();
+
+	if (!pros::competition::is_connected())
+	{
+		competition_initialize();
+	}
 }
 
 void disabled() {}
@@ -55,6 +59,58 @@ void competition_initialize()
 	// spawn the screen updater but don't block returning from competition_initialize
 	pros::Task screenUpdater(screenTask, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "screenUpdater");
 	// give the task a moment
+
+	//! COMP
+	/*
+	while (true)
+	{
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_LEFT))
+		{
+			lastAuton();
+			controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
+		}
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_UP))
+		{
+			nextAuton();
+			controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
+		}
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
+		{
+			controller.print(1, 0, "Selected!          ");
+			break; // exit the loop when Y is pressed
+		}
+		pros::delay(20);
+	}
+	*/
+
+	//! PRACTICE
+
+	while (true)
+	{
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_LEFT))
+		{
+			lastAuton();
+			controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
+		}
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_UP))
+		{
+			nextAuton();
+			controller.print(0, 0, "AUTON: %s           ", getAutonName(currentAuton));
+		}
+		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
+		{
+			controller.print(0, 0, "Selected!                         ");
+
+			// **optional: immediately run the auton for bench testing**
+			if (!pros::competition::is_connected())
+			{
+				runAuton(); // bench testing only
+			}
+
+			break; // exit the selection loop
+		}
+		pros::delay(10);
+	}
 	pros::delay(50);
 }
 
@@ -91,10 +147,11 @@ void opcontrol()
 		}
 		else
 		{
-			int power = controller.get_analog(ANALOG_LEFT_Y); // [-127..127]
-			int RX = controller.get_analog(ANALOG_RIGHT_X);	  // [-127..127]
+			int RY = controller.get_analog(ANALOG_LEFT_Y);	// [-127..127]
+			int RX = controller.get_analog(ANALOG_RIGHT_X); // [-127..127]
 
 			// cubic turn shaping (faster than pow)
+			int power = (RY * RY * RY) / (127 * 127);
 			int turn = (RX * RX * RX) / (127 * 127);
 
 			int left = power + turn;
@@ -139,18 +196,6 @@ void opcontrol()
 		}
 
 		// Auton Select
-		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_LEFT))
-		{
-			lastAuton();
-		}
-		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_UP))
-		{
-			nextAuton();
-		}
-		if (controller.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
-		{
-			runAuton();
-		}
 
 		// Important: yield CPU
 		pros::delay(10);
